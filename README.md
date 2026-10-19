@@ -1,5 +1,8 @@
 # GridOperatorCLI
 
+[![CI](https://github.com/OpenChargingCloud/GridOperatorCLI/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenChargingCloud/GridOperatorCLI/actions/workflows/ci.yml)
+[![Nightly](https://github.com/OpenChargingCloud/GridOperatorCLI/actions/workflows/nightly.yml/badge.svg)](https://github.com/OpenChargingCloud/GridOperatorCLI/actions/workflows/nightly.yml)
+
 A grid operator - a distribution system operator (DSO) - of the OpenChargingCloud, with its web interface, its
 OpenADR 3 VTN and a prompt: the program around [GridOperator](https://github.com/OpenChargingCloud/GridOperator),
 which pins it beside the libraries it needs.
@@ -9,7 +12,34 @@ which pins it beside the libraries it needs.
 - an **OpenADR 3 VTN** for the local controllers of the charging pools behind those points: they sign in with
   client credentials, read the limits sent to them and report back.
 
+The libraries it is built from are submodules, so they have to come along:
+
+```
+git clone --recurse-submodules https://github.com/OpenChargingCloud/GridOperatorCLI.git
+```
+
+If you already cloned it without them:
+
+```
+git submodule update --init --recursive
+```
+
+**On Windows**, turn long paths on first:
+
+```
+git config --global core.longpaths true
+```
+
+The deepest file in the submodules is 143 characters below the clone root, and under the classic 260-character
+limit git creates no file whose whole path is longer than 259, so the root itself may be at most 115 characters
+long. `D:\src\GridOperatorCLI` is fine; a checkout nested deep below `C:\Users\<you>\AppData\Local\Temp\...` can
+run out of room, and then the clone fails halfway through a submodule with `Filename too long` rather than at the
+start. Per clone instead of globally: `git clone -c core.longpaths=true ...`.
+
+Then build and start it:
+
 ```bash
+dotnet build GridOperatorCLI.slnx
 ./run.sh
 ```
 
@@ -43,6 +73,11 @@ At the prompt, or over SSH on port 22358:
 | `libs/WWCP_OpenADR` | the data structures of OpenADR 3 |
 | `libs/WWCP_Core` | what WWCP_OpenADR is built on |
 | `libs/WWCP_Node`, `Hermod`, `Styx`, `Norn`, `Urdr` | what every node of the family shares |
+
+Every push is built and tested on Windows and in a Debian 13 container by [`ci.yml`](.github/workflows/ci.yml): the
+grid operator's tests, the node's, both web interfaces, and one start that asks the web interface, the JSON API, the
+OpenADR 3 VTN and the SSH server whether they answer. [`nightly.yml`](.github/workflows/nightly.yml) runs every test
+of every library at the pinned submodules, and builds and tests once more with the submodules moved to their tips.
 
 
 ## Your participation
