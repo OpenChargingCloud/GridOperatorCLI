@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>cloud.charging.open.GridOperator.CLI</RootNamespace>
+    <AssemblyName>GridOperatorCLI</AssemblyName>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\libs\GridOperator\GridOperator\GridOperator.csproj" />
+    <ProjectReference Include="..\libs\Hermod\Hermod\Hermod.csproj" />
+    <ProjectReference Include="..\libs\Norn\Norn\Norn.csproj" />
+    <ProjectReference Include="..\libs\Styx\Styx\Styx.csproj" />
+    <ProjectReference Include="..\libs\Urdr\Urdr\Urdr.csproj" />
+    <ProjectReference Include="..\libs\WWCP_Node\WWCP_Node\WWCP_Node.csproj" />
+    <ProjectReference Include="..\libs\WWCP_POI\WWCP_POI3\WWCP_POI3.csproj" />
+    <ProjectReference Include="..\libs\WWCP_OpenADR\WWCP_OpenADR\WWCP_OpenADR.csproj" />
+  </ItemGroup>
+
+</Project>

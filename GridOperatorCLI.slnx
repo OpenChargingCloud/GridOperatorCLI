@@ -1,0 +1,34 @@
+<Solution>
+  <Folder Name="/Dependencies/">
+    <Project Path="libs/GridOperator/GridOperator/GridOperator.csproj" />
+    <Project Path="libs/GridOperator/GridOperatorTests/GridOperatorTests.csproj" />
+  </Folder>
+  <Folder Name="/Dependencies/OpenADR/">
+    <Project Path="libs/WWCP_OpenADR/WWCP_OpenADR/WWCP_OpenADR.csproj" />
+  </Folder>
+  <Folder Name="/Dependencies/OpenChargingCloud/">
+    <Project Path="libs/WWCP_Core/WWCP_Core/WWCP_Core.csproj" />
+    <Project Path="libs/WWCP_Core/WWCP_CoreData/WWCP_CoreData.csproj" />
+    <Project Path="libs/WWCP_Node/WWCP_Node/WWCP_Node.csproj" />
+    <Project Path="libs/WWCP_Node/WWCP_Node_TestKit/WWCP_Node_TestKit.csproj" />
+    <Project Path="libs/WWCP_Node/WWCP_Node_Tests/WWCP_Node_Tests.csproj" />
+    <Project Path="libs/WWCP_POI/WWCP_POI2/WWCP_POI2.csproj" />
+    <Project Path="libs/WWCP_POI/WWCP_POI3/WWCP_POI3.csproj" />
+    <Project Path="libs/WWCP_POI/WWCP_POI3_Tests/WWCP_POI3_Tests.csproj" />
+  </Folder>
+  <Folder Name="/Dependencies/Vanaheimr/">
+    <Project Path="libs/Hermod/Hermod/Hermod.csproj" />
+    <Project Path="libs/Hermod/HermodTests/HermodTests.csproj" />
+    <Project Path="libs/Styx/Styx/Styx.csproj" />
+    <Project Path="libs/Styx/StyxTests/StyxTests.csproj" />
+  </Folder>
+  <Folder Name="/Dependencies/Vanaheimr/Norn/">
+    <Project Path="libs/Norn/Norn/Norn.csproj" />
+    <Project Path="libs/Norn/NornTests/NornTests.csproj" />
+  </Folder>
+  <Folder Name="/Dependencies/Vanaheimr/Urdr/">
+    <Project Path="libs/Urdr/Urdr/Urdr.csproj" />
+    <Project Path="libs/Urdr/UrdrTests/UrdrTests.csproj" />
+  </Folder>
+  <Project Path="GridOperatorCLI/GridOperatorCLI.csproj" />
+</Solution>
