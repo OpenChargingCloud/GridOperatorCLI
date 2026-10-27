@@ -54,7 +54,30 @@ in `configuration.json` before that first start, e.g.
 ```
 
 Its keys are kept in `gridOperator/` beside the file, the local controllers and the limits in `openADR/`; keep a
-copy of `gridOperator/` where nobody else can read it. `--help` lists the switches.
+copy of `gridOperator/` where nobody else can read it. `--help` lists the switches: every node's, read by
+[WWCP_Node](https://github.com/OpenChargingCloud/WWCP_Node), among them HTTPS's `--https`, `--https-cert <file>`,
+`--https-key <file>`, `--redirect-port <number>` and `--trusted-proxy <address>`.
+
+**`--any` puts the sign-in on the network.** The local controllers need the VTN beyond the loopback, and with it
+come the password, the API keys, the session cookie and the client secrets the local controllers sign in with -
+in the clear, unless the grid operator speaks HTTPS itself or a proxy in front of it does and is named as trusted,
+both in the `web` section of `configuration.json`. Behind nginx:
+
+```json
+"web": { "trustedProxies": [ "127.0.0.1", "::1" ] }
+```
+
+With certbot's files and no proxy:
+
+```json
+"web": { "tls": { "certificate": { "fullchain": "/etc/letsencrypt/live/dso.example.org/fullchain.pem",
+                                   "privateKey": "/etc/letsencrypt/live/dso.example.org/privkey.pem" },
+                  "redirectPort": 80 } }
+```
+
+Or `"certificate": "store"`, with the identity imported by `--import-certificate tlsServerIdentity=<file>`. Neither
+said, the grid operator warns in its log, below its banner and above every page of its web interface to its
+administrators. Where it speaks HTTPS itself, the VTN's `tokenURL` says `https://` too.
 
 At the prompt, or over SSH on port 22358:
 

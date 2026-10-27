@@ -118,7 +118,8 @@ namespace cloud.charging.open.GridOperator.CLI
                                    ConsoleLogLevel:   arguments.ConsoleLogLevel,
                                    LogPath:           arguments.LogPathBelow(root),
                                    BridgeDebugLog:    !arguments.NoTrace,
-                                   SSH:               arguments.SSH
+                                   SSH:               arguments.SSH,
+                                   Web:               arguments.Web
                                );
             }
             catch (Exception e)
