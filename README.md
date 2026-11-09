@@ -77,7 +77,10 @@ With certbot's files and no proxy:
 
 Or `"certificate": "store"`, with the identity imported by `--import-certificate tlsServerIdentity=<file>`. Neither
 said, the grid operator warns in its log, below its banner and above every page of its web interface to its
-administrators. Where it speaks HTTPS itself, the VTN's `tokenURL` says `https://` too.
+administrators. The VTN's `tokenURL` and `vtnURL` are said to whoever asks at the name it asked for: behind a
+trusted proxy the host and the scheme the proxy names in `X-Forwarded-Host` and `X-Forwarded-Proto` (or in `Host`,
+with `proxy_set_header Host $host`), otherwise its own `Host`, and `https://` where it speaks HTTPS itself. A proxy
+that puts the grid operator below a path of its own is not followed: serve it at the same path.
 
 At the prompt, or over SSH on port 22358:
 
