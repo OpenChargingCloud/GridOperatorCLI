@@ -103,7 +103,10 @@ At the prompt, or over SSH on port 22358:
 Every push is built and tested on Windows and in a Debian 13 container by [`ci.yml`](.github/workflows/ci.yml): the
 grid operator's tests, the node's, both web interfaces, and one start that asks the web interface, the JSON API, the
 OpenADR 3 VTN and the SSH server whether they answer. [`nightly.yml`](.github/workflows/nightly.yml) runs every test
-of every library at the pinned submodules, and builds and tests once more with the submodules moved to their tips.
+of every library at the pinned submodules, builds and tests once more with the submodules moved to their tips, and
+lets a [LocalControllerCLI](https://github.com/OpenChargingCloud/LocalControllerCLI) read a limit from the grid
+operator and report back over OpenADR 3: [`scripts/endToEnd.sh`](scripts/endToEnd.sh), which runs beside a local
+build of both as well.
 
 
 ## Your participation

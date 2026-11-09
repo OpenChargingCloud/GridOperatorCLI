@@ -14,6 +14,10 @@ name: Nightly
 # find out whether advancing the gitlinks would work before somebody advances
 # them.
 #
+# A third sits between the two programs of the grid: a limit sent by this grid
+# operator, read by a LocalControllerCLI, and its report coming back - see the
+# end-to-end job.
+#
 # Two things worth knowing about scheduled workflows: they only ever run on the
 # default branch, and GitHub disables them after 60 days without any repository
 # activity. If this stops reporting, that is the first thing to check.
@@ -270,6 +274,65 @@ jobs:
             artifacts/*/*_hangdump.dmp
             artifacts/*/*_crashdump.dmp
 
+
+  # ---------------------------------------------------------------------------
+  # A third question, between two programs: does a limit the grid operator
+  # sends reach a local controller, and does its report come back?
+  #
+  # GridOperatorCLI as pinned here, LocalControllerCLI as it is on its master
+  # tonight, each with its own submodules. scripts/endToEnd.sh starts the grid
+  # operator, adds a grid connection point, a local controller and a limit of
+  # 44 kW over the JSON API, starts the local controller with the credentials
+  # it was given, and waits for the report: sign-in, token, events and report,
+  # over the network between two programs that share nothing but OpenADR 3.
+  #
+  # It can go red for either side, and that is the point of it: neither
+  # repository's own tests see the other. What the script printed says which
+  # one stopped where.
+  #
+  # One leg, Debian: this is a question about the protocol, not the platform.
+  # ---------------------------------------------------------------------------
+  end-to-end:
+    runs-on: ubuntu-latest
+    container: debian:13
+    timeout-minutes: 60
+    steps:
+
+      - name: Install prerequisites
+        run: apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git libicu76 libssl3t64 libstdc++6 tzdata xz-utils && git config --global --add safe.directory '*'
+
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: actions/checkout@v7
+        with:
+          repository: OpenChargingCloud/LocalControllerCLI
+          path: LocalControllerCLI
+          submodules: recursive
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+
+      - name: Build the grid operator
+        run: dotnet build GridOperatorCLI/GridOperatorCLI.csproj --configuration Release
+
+      - name: Build the local controller
+        run: dotnet build LocalControllerCLI/LocalControllerCLI/LocalControllerCLI.csproj --configuration Release
+
+      - name: A limit goes out, a report comes back
+        timeout-minutes: 5
+        shell: bash
+        env:
+          LOCALCONTROLLER_DLL: LocalControllerCLI/LocalControllerCLI/bin/Release/net10.0/LocalControllerCLI.dll
+        run: |
+          echo "LocalControllerCLI at $(git -C LocalControllerCLI rev-parse HEAD)"
+          bash scripts/endToEnd.sh
 
   # ---------------------------------------------------------------------------
   # The other question: what would happen if the gitlinks were advanced today?
