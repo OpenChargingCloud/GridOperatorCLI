@@ -21,8 +21,8 @@
 set -u
 
 here="$(cd "$(dirname "$0")/.." && pwd)"
-go_dll="${GRIDOPERATOR_DLL:-$here/GridOperatorCLI/bin/Release/net10.0/GridOperatorCLI.dll}"
-lc_dll="${LOCALCONTROLLER_DLL:-$here/../LocalControllerCLI/LocalControllerCLI/bin/Release/net10.0/LocalControllerCLI.dll}"
+go_dll="${GRIDOPERATOR_DLL:-$here/GridOperatorCLI/bin/Release/net11.0/GridOperatorCLI.dll}"
+lc_dll="${LOCALCONTROLLER_DLL:-$here/../LocalControllerCLI/LocalControllerCLI/bin/Release/net11.0/LocalControllerCLI.dll}"
 
 for dll in "$go_dll" "$lc_dll"; do
     if [ ! -f "$dll" ]; then

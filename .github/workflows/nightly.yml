@@ -70,7 +70,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
 
       - uses: actions/setup-node@v7
         with:
@@ -129,7 +129,7 @@ jobs:
         run: |
           set -u
           tmp="$(mktemp -d)"
-          dotnet GridOperatorCLI/bin/Release/net10.0/GridOperatorCLI.dll \
+          dotnet GridOperatorCLI/bin/Release/net11.0/GridOperatorCLI.dll \
               --port          18129 \
               --ssh-port      22129 \
               --accounts      "$tmp/accounts" \
@@ -313,7 +313,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
 
       - uses: actions/setup-node@v7
         with:
@@ -329,7 +329,7 @@ jobs:
         timeout-minutes: 5
         shell: bash
         env:
-          LOCALCONTROLLER_DLL: LocalControllerCLI/LocalControllerCLI/bin/Release/net10.0/LocalControllerCLI.dll
+          LOCALCONTROLLER_DLL: LocalControllerCLI/LocalControllerCLI/bin/Release/net11.0/LocalControllerCLI.dll
         run: |
           echo "LocalControllerCLI at $(git -C LocalControllerCLI rev-parse HEAD)"
           bash scripts/endToEnd.sh
@@ -366,7 +366,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
 
       - uses: actions/setup-node@v7
         with:
