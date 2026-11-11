@@ -130,10 +130,6 @@ namespace cloud.charging.open.GridOperator.CLI
             await using (gridOperator)
             {
 
-                // What somebody signed in over SSH gets: this program's own
-                // command line, with its commands beside the node's.
-                gridOperator.CommandLines = (terminal, caller) => new GridOperatorCLI(gridOperator, terminal, caller);
-
                 if (gridOperator.ImportCertificates(arguments, out _) is Int32 notImported)
                     return notImported;
 
