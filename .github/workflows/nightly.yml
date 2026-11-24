@@ -15,8 +15,8 @@ name: Nightly
 # them.
 #
 # A third sits between the two programs of the grid: a limit sent by this grid
-# operator, read by a LocalControllerCLI, and its report coming back - see the
-# end-to-end job.
+# operator, read by LocalControllerCLIs over HTTP, the WebSocket port of OpenADR
+# and SSH, and their reports coming back - see the end-to-end job.
 #
 # Two things worth knowing about scheduled workflows: they only ever run on the
 # default branch, and GitHub disables them after 60 days without any repository
@@ -281,10 +281,13 @@ jobs:
   #
   # GridOperatorCLI as pinned here, LocalControllerCLI as it is on its master
   # tonight, each with its own submodules. scripts/endToEnd.sh starts the grid
-  # operator, adds a grid connection point, a local controller and a limit of
-  # 44 kW over the JSON API, starts the local controller with the credentials
-  # it was given, and waits for the report: sign-in, token, events and report,
-  # over the network between two programs that share nothing but OpenADR 3.
+  # operator, adds a grid connection point, three local controllers and a limit
+  # of 44 kW over the JSON API, lets the second connect over the WebSocket port
+  # of OpenADR in messages and the third over SSH in the REST binding, starts
+  # three local controllers with the credentials they were given, and waits for
+  # a report from each: sign-in, events and report, over the network between
+  # two programs that share nothing but OpenADR 3 - over HTTP, a WebSocket and
+  # SSH.
   #
   # It can go red for either side, and that is the point of it: neither
   # repository's own tests see the other. What the script printed says which
@@ -325,7 +328,7 @@ jobs:
       - name: Build the local controller
         run: dotnet build LocalControllerCLI/LocalControllerCLI/LocalControllerCLI.csproj --configuration Release
 
-      - name: A limit goes out, a report comes back
+      - name: A limit goes out over HTTP, a WebSocket and SSH, three reports come back
         timeout-minutes: 5
         shell: bash
         env:
