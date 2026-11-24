@@ -105,7 +105,7 @@ grid operator's tests, the node's, both web interfaces, and one start that asks 
 OpenADR 3 VTN and the SSH server whether they answer. [`nightly.yml`](.github/workflows/nightly.yml) runs every test
 of every library at the pinned submodules, builds and tests once more with the submodules moved to their tips, and
 lets three [LocalControllerCLIs](https://github.com/OpenChargingCloud/LocalControllerCLI) read a limit from the grid
-operator and report back over OpenADR 3 - over HTTP, the WebSocket port of OpenADR and SSH: [`scripts/endToEnd.sh`](scripts/endToEnd.sh), which runs beside a local
+operator and report back over OpenADR 3 - over HTTP, the WebSocket port of OpenADR and SSH, the last signing in with the local controller's own SSH key: [`scripts/endToEnd.sh`](scripts/endToEnd.sh), which runs beside a local
 build of both as well.
 
 

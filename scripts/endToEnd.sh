@@ -8,8 +8,11 @@
 # over the WebSocket port in the binding of messages and the third over SSH in
 # the REST binding, and sends one limit to all three. Three LocalControllerCLIs
 # start, each with what the grid operator said once: the first with its client
-# secret, the other two with the URL and the password of their connection,
-# which they are given over their own JSON API, as root. It is green when each
+# secret, the second with the URL and the password of its connection, which it
+# is given over its own JSON API, as root. The third has no password at all: a
+# connection written down there, not yet made, makes its own SSH key, which the
+# grid operator is told when it lets it connect, and the host key the grid
+# operator says then is what the connection is made with. It is green when each
 # of them read the limit and the grid operator has a report from each: sign-in,
 # events, the limit and the report, across the network between two programs
 # that only share the schema - three times, one way each.
@@ -179,20 +182,19 @@ http_vtn="$(value vtnURL "$tmp/added-lc-http.json")"
 http_secret="$(value clientSecret "$tmp/added-lc-http.json")"
 [ -n "$http_vtn" ] && [ -n "$http_secret" ] || fail "Adding lc-http said no VTN URL or no secret."
 
-# The second connects over the WebSocket port, the third over SSH.
+# The second connects over the WebSocket port, with a password. The third
+# connects over SSH with its own key - which it has once it has a connection to
+# write down - and so is let connect once it runs, below.
 code="$(api POST /api/v1/openADR/localControllers/lc-ws/connections '{ "transport": "ws", "binding": "messages" }')"
 [ "$code" = 201 ] || fail "lc-ws was not let connect over the WebSocket port ($code): $(head -c 500 "$tmp/answer.json")"
 cp "$tmp/answer.json" "$tmp/connected-lc-ws.json"
 
-code="$(api POST /api/v1/openADR/localControllers/lc-ssh/connections '{ "transport": "ssh", "binding": "rest" }')"
-[ "$code" = 201 ] || fail "lc-ssh was not let connect over SSH ($code): $(head -c 500 "$tmp/answer.json")"
-cp "$tmp/answer.json" "$tmp/connected-lc-ssh.json"
+[ -n "$(value vtnURL "$tmp/connected-lc-ws.json")" ] && [ -n "$(value password "$tmp/connected-lc-ws.json")" ] ||
+    fail "Letting lc-ws connect said no URL or no password."
 
-for ven in lc-ws lc-ssh; do
-    [ -n "$(value vtnURL "$tmp/connected-$ven.json")" ] && [ -n "$(value password "$tmp/connected-$ven.json")" ] ||
-        fail "Letting $ven connect said no URL or no password."
-done
-[ -n "$(value sshHostKey "$tmp/connected-lc-ssh.json")" ] || fail "Letting lc-ssh connect over SSH said no host key."
+# Where lc-ssh will connect to: its VEN name the login, the SSH port of the
+# grid operator the port - what letting it connect has to say, below.
+ssh_vtn="ssh://lc-ssh@127.0.0.1:22129"
 
 # One limit, for every local controller behind the point.
 code="$(api POST /api/v1/openADR/limits '{ "kind": "IMPORT_CAPACITY_LIMIT", "limitKW": 44, "durationMinutes": 60, "gridConnectionPointId": "GCP-1" }')"
@@ -201,7 +203,6 @@ code="$(api POST /api/v1/openADR/limits '{ "kind": "IMPORT_CAPACITY_LIMIT", "lim
 echo "grid operator     up, root signed in, GCP-1, $vens and a limit of 44 kW for all three added"
 echo "                  lc-http   over $http_vtn"
 echo "                  lc-ws     over $(value vtnURL "$tmp/connected-lc-ws.json"), messages"
-echo "                  lc-ssh    over $(value vtnURL "$tmp/connected-lc-ssh.json"), REST"
 
 #endregion
 
@@ -220,11 +221,15 @@ EOF
         # import" writes it - never a switch of the program.
         printf '{ "clientSecret": "%s" }\n' "$http_secret" > "$dir/openadr-credentials.json"
         chmod 600 "$dir/openadr-credentials.json" 2>/dev/null || true
-    else
+    elif [ "$ven" = lc-ws ]; then
         # Through its connection to the grid operator: the URL of the
         # connection is its "vtnURL".
         cat > "$dir/configuration.json" <<EOF
 { "openADR": { "enabled": true, "vtnURL": "$(value vtnURL "$tmp/connected-$ven.json")", "pollEvery": 5 } }
+EOF
+    else
+        cat > "$dir/configuration.json" <<EOF
+{ "openADR": { "enabled": true, "vtnURL": "$ssh_vtn", "pollEvery": 5 } }
 EOF
     fi
 
@@ -240,9 +245,7 @@ EOF
 
 done
 
-# The two that connect get their connection over their own JSON API, as root:
-# the password as the credentials of the login, the connection with its URL,
-# its binding and - over SSH - the host key of the grid operator.
+# The two that connect get their connection over their own JSON API, as root.
 for ven in lc-ws lc-ssh; do
 
     dir="$tmp/$ven"
@@ -254,20 +257,57 @@ for ven in lc-ws lc-ssh; do
     lc_password="$(banner_password "$dir/console.log")"
     [ -n "$lc_password" ] || fail "The local controller $ven showed no password for root."
 
-    connected="$tmp/connected-$ven.json"
+    if [ "$ven" = lc-ws ]; then
 
-    code="$(request "$lc_url" "$lc_password" "$dir/answer.json" POST /api/v1/configuration/authentications \
-                    "{ \"kind\": \"basic\", \"login\": \"$(value login "$connected")\", \"secret\": \"$(value password "$connected")\", \"description\": { \"en\": \"The grid operator\" } }")"
-    [ "$code" = 201 ] || fail "$ven took no credentials ($code): $(head -c 500 "$dir/answer.json")"
+        # The password as the credentials of the login, the connection with
+        # its URL and its binding.
+        connected="$tmp/connected-$ven.json"
 
-    authentication="$(value id "$dir/answer.json")"
+        code="$(request "$lc_url" "$lc_password" "$dir/answer.json" POST /api/v1/configuration/authentications \
+                        "{ \"kind\": \"basic\", \"login\": \"$(value login "$connected")\", \"secret\": \"$(value password "$connected")\", \"description\": { \"en\": \"The grid operator\" } }")"
+        [ "$code" = 201 ] || fail "$ven took no credentials ($code): $(head -c 500 "$dir/answer.json")"
 
-    host_key=""
-    [ "$ven" = lc-ssh ] && host_key=", \"sshHostKey\": \"$(value sshHostKey "$connected")\""
+        code="$(request "$lc_url" "$lc_password" "$dir/answer.json" POST /api/v1/configuration/connections \
+                        "{ \"description\": { \"en\": \"The grid operator\" }, \"url\": \"$(value vtnURL "$connected")\", \"connectionType\": \"GridOperator\", \"autoConnect\": true, \"authenticationId\": \"$(value id "$dir/answer.json")\", \"openADRBinding\": \"$(value openADRBinding "$connected")\" }")"
+        [ "$code" = 201 ] || fail "$ven took no connection to the grid operator ($code): $(head -c 500 "$dir/answer.json")"
+
+        continue
+
+    fi
+
+    # Over SSH with its own key, and no password at all: the connection
+    # written down first, not yet made - which makes the key, whose public half
+    # the answer shows -, the grid operator told the key, and only then the
+    # connection made, with the host key the grid operator said.
+    connection="{ \"description\": { \"en\": \"The grid operator\" }, \"url\": \"$ssh_vtn\", \"connectionType\": \"GridOperator\", \"openADRBinding\": \"rest\""
 
     code="$(request "$lc_url" "$lc_password" "$dir/answer.json" POST /api/v1/configuration/connections \
-                    "{ \"description\": { \"en\": \"The grid operator\" }, \"url\": \"$(value vtnURL "$connected")\", \"connectionType\": \"GridOperator\", \"autoConnect\": true, \"authenticationId\": \"$authentication\", \"openADRBinding\": \"$(value openADRBinding "$connected")\"$host_key }")"
+                    "$connection, \"autoConnect\": false }")"
     [ "$code" = 201 ] || fail "$ven took no connection to the grid operator ($code): $(head -c 500 "$dir/answer.json")"
+
+    connection_id="$(value id "$dir/answer.json")"
+    lc_key="$(value publicKey "$dir/answer.json")"
+    case "$lc_key" in
+        ssh-*) ;;
+        *)     fail "$ven showed no SSH key of its own once it had an ssh:// connection: $(head -c 500 "$dir/answer.json")" ;;
+    esac
+
+    code="$(api POST /api/v1/openADR/localControllers/lc-ssh/connections "{ \"transport\": \"ssh\", \"binding\": \"rest\", \"sshKey\": \"$lc_key\" }")"
+    [ "$code" = 201 ] || fail "lc-ssh was not let connect over SSH with its key ($code): $(head -c 500 "$tmp/answer.json")"
+    cp "$tmp/answer.json" "$tmp/connected-lc-ssh.json"
+
+    [ "$(value vtnURL "$tmp/connected-lc-ssh.json")" = "$ssh_vtn" ] ||
+        fail "Letting lc-ssh connect over SSH said the URL $(value vtnURL "$tmp/connected-lc-ssh.json"), and not $ssh_vtn."
+    [ -z "$(value password "$tmp/connected-lc-ssh.json")" ] ||
+        fail "Letting lc-ssh connect with its key made a password too."
+    host_key="$(value sshHostKey "$tmp/connected-lc-ssh.json")"
+    [ -n "$host_key" ] || fail "Letting lc-ssh connect over SSH said no host key."
+
+    code="$(request "$lc_url" "$lc_password" "$dir/answer.json" POST /api/v1/configuration/connections/update \
+                    "{ \"id\": \"$connection_id\", ${connection#\{ }, \"sshHostKey\": \"$host_key\", \"autoConnect\": true }")"
+    [ "$code" = 200 ] || fail "$ven did not make its connection to the grid operator ($code): $(head -c 500 "$dir/answer.json")"
+
+    echo "                  lc-ssh    over $ssh_vtn, REST, signing in with its own key (${lc_key%% *})"
 
 done
 
@@ -313,6 +353,11 @@ for ven in $vens; do
 done
 
 [ -z "$failed" ] || fail "Not end to end:$failed."
+
+# And lc-ssh signed in with its own key: it has no password to sign in with,
+# and says so where it connects.
+grep -a -r -q "over SSH.*signing in with this [a-z ]*'s SSH key" "$tmp/lc-ssh/console.log" "$tmp/lc-ssh/logs" 2>/dev/null ||
+    fail "lc-ssh did not say it signed in with its own SSH key."
 
 #endregion
 
