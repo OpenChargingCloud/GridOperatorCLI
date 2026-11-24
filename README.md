@@ -90,7 +90,7 @@ At the prompt, or over SSH on port 22358:
 | `gridConnectionPoints [<id> \| add … \| remove <id>]` | its grid connection points |
 | `localControllers [add … \| secret <venName> \| remove <venName>]` | the local controllers that may sign in at the VTN |
 | `limits [send … \| cancel <id>]` | the limits sent to them |
-| `publish [now]` | what publishing to the roaming network would change; with `now`, signed and committed |
+| `publish [now \| accept]` | what publishing to the roaming network would change; with `now`, signed and committed; with `accept`, the change set adding it there signed with its identity key |
 
 | | |
 |---|---|
