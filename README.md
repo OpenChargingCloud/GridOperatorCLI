@@ -1,5 +1,7 @@
 # GridOperatorCLI
 
+![The EV charging test environment, the grid operator (GO) highlighted](docs/EVChargingTestEnvironment.svg)
+
 [![CI](https://github.com/OpenChargingCloud/GridOperatorCLI/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenChargingCloud/GridOperatorCLI/actions/workflows/ci.yml)
 [![Nightly](https://github.com/OpenChargingCloud/GridOperatorCLI/actions/workflows/nightly.yml/badge.svg)](https://github.com/OpenChargingCloud/GridOperatorCLI/actions/workflows/nightly.yml)
 
